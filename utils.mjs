@@ -31,3 +31,5 @@ export const getStraightAdjacentPositions = (i, j) => [
   [i + 1, j],
   [i - 1, j],
 ];
+
+export const range = (n) => [...Array(n).keys()];
