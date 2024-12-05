@@ -13,7 +13,10 @@ export const DefaultObj = (defaultValue) =>
     {},
     {
       get(target, prop) {
-        return prop in target ? target[prop] : defaultValue;
+        if (!(prop in target)) {
+          target[prop] = structuredClone(defaultValue);
+        }
+        return target[prop];
       },
     },
   );
