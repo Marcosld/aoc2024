@@ -11,11 +11,7 @@ const solve1 = () => {
       .split(" ")
       .map((part) => part.slice(2).split(",").map(Number));
 
-    const [finalI, finalJ] = [(i + di * seconds) % I, (j + dj * seconds) % J];
-    const [fI, fJ] = [
-      finalI < 0 ? I + finalI : finalI,
-      finalJ < 0 ? J + finalJ : finalJ,
-    ];
+    const [fI, fJ] = normalizePos([i + di * seconds, j + dj * seconds]);
     if (fI >= 0 && fI < halfI && fJ >= 0 && fJ < halfJ) {
       Q[0]++;
     }
