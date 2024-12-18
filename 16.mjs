@@ -37,7 +37,7 @@ for (const v of vertexes) {
 // const solve1 = () => {
 //   let positions = [[S, ">", 0]];
 //   let lowest = Infinity;
-//   const seen = {};
+//   const seen = {}; // just lowest for each position
 //   while (positions.length) {
 //     positions = positions.sort((a, b) => estimate(...b) - estimate(...a));
 //     const [pos, dir, score] = positions.shift();
