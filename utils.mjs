@@ -36,3 +36,14 @@ export const getStraightAdjacentPositions = ([i, j]) => [
 ];
 
 export const range = (n) => [...Array(n).keys()];
+
+export const cache = (fn) => {
+  const cached = {};
+  return (...args) => {
+    const argsStr = JSON.stringify(args);
+    if (!(argsStr in cached)) {
+      cached[argsStr] = fn(...args);
+    }
+    return cached[argsStr];
+  };
+};
