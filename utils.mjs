@@ -47,3 +47,7 @@ export const cache = (fn) => {
     return cached[argsStr];
   };
 };
+
+export const str = (val) => JSON.stringify(val);
+
+export const prs = (val) => JSON.parse(val);

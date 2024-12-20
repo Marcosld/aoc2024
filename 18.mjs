@@ -3,6 +3,8 @@ import {
   range,
   getStraightAdjacentPositions,
   DefaultObj,
+  prs,
+  str,
 } from "./utils.mjs";
 
 const input = readInput(import.meta);
@@ -11,9 +13,6 @@ const SIZE = 70 + 1;
 const map = {};
 const BYTES = 1024;
 const E = [SIZE - 1, SIZE - 1];
-
-const str = (val) => JSON.stringify(val);
-const prs = (val) => JSON.parse(val);
 
 const initMap = () => {
   for (const i of range(SIZE)) {
