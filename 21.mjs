@@ -1,4 +1,9 @@
-import { readInput, getStraightAdjacentPositions, str } from "./utils.mjs";
+import {
+  readInput,
+  getStraightAdjacentPositions,
+  str,
+  cache,
+} from "./utils.mjs";
 
 const input = readInput(import.meta);
 
@@ -26,106 +31,61 @@ const getKeyPos = (pad, key) => {
   }
 };
 
-const getNumericPadPath = (fKey, tKey) => {
-  if (fKey === tKey) {
-    return [""];
-  }
-
-  const fKeyPos = getKeyPos(numericPad, fKey);
+const getPaths = (fKey = "A", tKey, pad) => {
+  const fKeyPos = getKeyPos(pad, fKey);
 
   const positions = [[fKeyPos, ""]];
   const visited = new Set([str(fKeyPos)]);
   const candidates = [];
 
   while (positions.length) {
-    const [pos, path] = positions.shift();
-    visited.add(str(pos));
+    const [[i, j], path] = positions.shift();
+    visited.add(str([i, j]));
 
-    if (numericPad[pos[0]][pos[1]] === tKey) {
-      candidates.push(path);
+    if (pad[i][j] === tKey) {
+      candidates.push(path + "A");
       continue;
     }
 
     if (candidates.length) {
-      continue;
+      break;
     }
 
-    for (const [l, [i, j]] of getStraightAdjacentPositions(pos).entries()) {
-      const nextKey = numericPad[i]?.[j];
-
-      if (nextKey !== undefined && !visited.has(str([i, j]))) {
-        positions.push([[i, j], path + DIRS[l]]);
+    const iterator = getStraightAdjacentPositions([i, j]).entries();
+    for (const [l, [nI, nJ]] of iterator) {
+      if (pad[nI]?.[nJ] !== undefined && !visited.has(str([nI, nJ]))) {
+        positions.push([[nI, nJ], path + DIRS[l]]);
       }
     }
   }
   return candidates;
 };
 
-const getDirectionalPadPath = (fKey, tKey) => {
-  if (fKey === tKey) {
-    return [""];
-  }
+const solveLine = cache((line, directionalIterations, iteration = 0) => {
+  let acc = 0;
+  for (let i = 0; i < line.length; i++) {
+    const pad = iteration === 0 ? numericPad : directionalPad;
+    const possiblePaths = getPaths(line[i - 1], line[i], pad);
 
-  const fKeyPos = getKeyPos(directionalPad, fKey);
-
-  const positions = [[fKeyPos, ""]];
-  const visited = new Set([str(fKeyPos)]);
-  const candidates = [];
-
-  while (positions.length) {
-    const [pos, path] = positions.shift();
-    visited.add(str(pos));
-
-    if (directionalPad[pos[0]][pos[1]] === tKey) {
-      candidates.push(path);
-      continue;
-    }
-
-    if (candidates.length) {
-      continue;
-    }
-
-    for (const [l, [i, j]] of getStraightAdjacentPositions(pos).entries()) {
-      const nextKey = directionalPad[i]?.[j];
-
-      if (nextKey !== undefined && !visited.has(str([i, j]))) {
-        positions.push([[i, j], path + DIRS[l]]);
-      }
-    }
-  }
-  return candidates;
-};
-
-const solve = (line, solver) => {
-  let solutions = ["A"];
-  for (let i = 0; i < line.length - 1; i++) {
-    const paths = solver(line[i], line[i + 1]);
-    solutions = solutions.flatMap((solution) =>
-      paths.map((path) => solution + path + "A"),
+    acc += Math.min(
+      ...possiblePaths.map((path) =>
+        iteration === directionalIterations
+          ? path.length
+          : solveLine(path, directionalIterations, iteration + 1),
+      ),
     );
   }
-  return solutions;
-};
+  return acc;
+});
 
-const solve1 = () => {
+const solve = (iterations) => {
   let acc = 0;
   for (const readLine of input.split("\n")) {
-    const numericPadSolutions = solve(`A${readLine}`, getNumericPadPath);
-    const directionalPadSolutions1 = numericPadSolutions.flatMap((line) =>
-      solve(line, getDirectionalPadPath),
-    );
-    const directionalPadSolutions2 = directionalPadSolutions1.flatMap((line) =>
-      solve(line, getDirectionalPadPath),
-    );
-    const bestPath = directionalPadSolutions2.sort(
-      (a, b) => a.length - b.length,
-    )[0];
-    console.log(bestPath.length);
-    acc += (bestPath.length - 1) * +readLine.slice(0, -1);
+    const solution = solveLine(readLine, iterations);
+    acc += solution * +readLine.slice(0, -1);
   }
   return acc;
 };
 
-console.log(solve1());
-
-// BAd: 244490
+console.log(solve(2));
+console.log(solve(25));
