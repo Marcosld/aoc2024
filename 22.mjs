@@ -8,52 +8,45 @@ import {
 
 const input = readInput(import.meta);
 
-const pruner = 16777216n;
+const pruner = (1 << 24) - 1; // Doing modulo X where X = 2**N is the same than doing & X - 1
 
-const bananaCounts = DefaultObj(0n);
+const bananaCounts = new Uint32Array(19 ** 4);
+const seenKeys = new Uint32Array(19 ** 4);
 
 const getNextSecret = (n) => {
-  const a = (n ^ (n * 64n)) % pruner;
-  const b = (a ^ (a / 32n)) % pruner;
-  return (b ^ (b * 2048n)) % pruner;
+  const a = (n ^ (n << 6)) & pruner;
+  const b = (a ^ (a >>> 5)) & pruner;
+  return (b ^ (b << 11)) & pruner;
 };
 
 const solve = () => {
-  let acc = 0n;
-  for (const num of input.split("\n").map(BigInt)) {
-    const seenKeys = new Set();
-    let varianceKey = "";
+  let acc = 0;
+  for (const [lineNo_, num] of input.split("\n").map(Number).entries()) {
+    const lineNo = lineNo_ + 1;
+    let varianceKey = 0;
     let secret = num;
     for (let i = 0; i < 2000; i++) {
       const temp = getNextSecret(secret);
-      const bananas = temp % 10n;
-      const variance = bananas - (secret % 10n);
-      varianceKey += variance >= 0 ? "+" + variance : variance;
-      if (varianceKey.length > 8) {
-        varianceKey = varianceKey.slice(2);
-      }
-      if (varianceKey.length === 8 && !seenKeys.has(varianceKey)) {
+      const bananas = temp % 10;
+      const variance = bananas - (secret % 10);
+      varianceKey = (varianceKey * 19 + variance + 9) % 19 ** 4;
+      if (i >= 3 && seenKeys[varianceKey] !== lineNo) {
         bananaCounts[varianceKey] += bananas;
-        seenKeys.add(varianceKey);
+        seenKeys[varianceKey] = lineNo;
       }
       secret = temp;
     }
     acc += secret;
   }
-  return [
-    acc,
-    Object.values(bananaCounts).sort((a, b) => {
-      if (a < b) {
-        return 1;
-      }
-      if (a > b) {
-        return -1;
-      }
-      return 0;
-    })[0],
-  ];
+  let max = 0;
+  for (const v of bananaCounts) {
+    if (v > max) {
+      max = v;
+    }
+  }
+  return [acc, max];
 };
 
-console.time("a");
+console.time();
 console.log(solve().join("\n"));
-console.timeEnd("a");
+console.timeEnd();
