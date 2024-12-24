@@ -47,7 +47,7 @@ const getCombinations = (arr, size = 3, result = "") => {
   return combinations;
 };
 
-const solve2 = () => {
+const solve = () => {
   let maxConnected = new Set();
   const p1Combs = new Set();
   for (const node of nodeList) {
@@ -67,6 +67,4 @@ const solve2 = () => {
   return [[...maxConnected.keys()].sort().join(","), p1Combs.size];
 };
 
-console.time();
-console.log(solve2().join("\n"));
-console.timeEnd();
+console.log(solve().join("\n"));
